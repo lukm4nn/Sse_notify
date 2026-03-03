@@ -15,7 +15,7 @@ class SseForegroundService : Service() {
         SupervisorJob() + Dispatchers.IO
     )
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission", "NewApi")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         startForeground(
@@ -27,7 +27,7 @@ class SseForegroundService : Service() {
 
         scope.launch {
             withTimeoutOrNull(15 * 60 * 1000L) { // 🔥 auto stop 15 menit
-                repo.listen("token").collect { event ->
+                repo.listen("123").collect { event ->
                     NotificationHelper.show(this@SseForegroundService, event)
                 }
             }

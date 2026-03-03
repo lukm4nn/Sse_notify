@@ -22,6 +22,18 @@ import sse_notify.composeapp.generated.resources.compose_multiplatform
 @Composable
 @Preview
 fun App() {
+
+    val repo = remember { NotificationRepository(SseClient()) }
+    val userId = "123"
+
+    LaunchedEffect(Unit) {
+        repo.listen(userId).collect {
+            println("Pesan $it")
+            PlatformNotification.show(it)
+        }
+    }
+
+
     MaterialTheme {
         var showContent by remember { mutableStateOf(false) }
         Column(

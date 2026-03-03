@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.google.services)
 }
 
 kotlin {
@@ -35,6 +36,7 @@ kotlin {
             implementation(libs.androidx.core.ktx)
             implementation(libs.androidx.core)
             implementation(libs.kotlinx.coroutines.android)
+            implementation(libs.firebase.messaging.v2341)
 
         }
         commonMain.dependencies {
@@ -51,6 +53,8 @@ kotlin {
             implementation(libs.ktor.client.cio)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
 
         }
         commonTest.dependencies {

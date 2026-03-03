@@ -12,6 +12,7 @@ class MyApplication : Application(), LifecycleObserver {
 
     override fun onCreate() {
         super.onCreate()
+        PlatformNotification.init(this)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
     }
 

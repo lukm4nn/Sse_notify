@@ -3,6 +3,7 @@ package com.qti.sse_notify
 
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.qti.sse_notify.sse.SseForegroundService
@@ -16,7 +17,7 @@ class WakeFcmService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-
+        Log.d("FCM Token", token)
         scope.launch {
             PushApi.sendFcmToken(token)
         }
@@ -24,9 +25,11 @@ class WakeFcmService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
 
+        println("Message received: $message")
+
         val type = message.data["type"] ?: return
         if (type != "WAKE_SSE") return
-        if (AppState.isForeground) return
+//        if (AppState.isForeground) return
 
         val intent = Intent(this, SseForegroundService::class.java)
 

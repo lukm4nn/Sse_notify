@@ -6,9 +6,9 @@ class NotificationRepository(
     private val sseClient: SseClient
 ) {
 
-    fun listen(token: String): Flow<String> =
+    fun listen(userId: String): Flow<String> =
         sseClient.connect(
-            url = "https://api.example.com/sse",
-            token = token
+            url = "http://10.0.2.2:8080/sse/notifications",
+            userId = userId
         )
 }

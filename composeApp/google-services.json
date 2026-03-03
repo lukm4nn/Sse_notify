@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "937193744849",
+    "project_id": "sse-notify",
+    "storage_bucket": "sse-notify.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:937193744849:android:ea9471df5a1516413b98f0",
+        "android_client_info": {
+          "package_name": "com.qti.sse_notify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2ZxnUfNlr1vwgYHfPO8AlFJrVMjO9RAo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
