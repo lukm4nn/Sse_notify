@@ -2,8 +2,10 @@ package com.qti.sse_notify.sse
 
 import android.annotation.SuppressLint
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.os.PowerManager
 import com.qti.sse_notify.NotificationHelper
 import com.qti.sse_notify.NotificationRepository
 import com.qti.sse_notify.SseClient
@@ -11,34 +13,39 @@ import kotlinx.coroutines.*
 
 class SseForegroundService : Service() {
 
-    private val scope = CoroutineScope(
-        SupervisorJob() + Dispatchers.IO
-    )
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var wakeLock: PowerManager.WakeLock? = null
 
     @SuppressLint("MissingPermission", "NewApi")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        startForeground(
-            1,
-            NotificationHelper.foreground(this)
-        )
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SseApp::WakelockTag")
+        wakeLock?.acquire(15 * 60 * 1000L)
+
+        startForeground(1, NotificationHelper.foreground(this))
 
         val repo = NotificationRepository(SseClient())
 
         scope.launch {
-            withTimeoutOrNull(15 * 60 * 1000L) { // 🔥 auto stop 15 menit
-                repo.listen("123").collect { event ->
-                    NotificationHelper.show(this@SseForegroundService, event)
+            try {
+                withTimeoutOrNull(15 * 60 * 1000L) {
+                    repo.listen("123").collect { event ->
+                        NotificationHelper.show(this@SseForegroundService, event)
+                    }
                 }
+            } finally {
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                stopSelf()
             }
-            stopSelf()
         }
 
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     override fun onDestroy() {
         scope.cancel()
+        if (wakeLock?.isHeld == true) wakeLock?.release()
         super.onDestroy()
     }
 

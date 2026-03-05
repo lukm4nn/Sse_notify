@@ -19,12 +19,11 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun App() {
-    // Inisialisasi client & repo (sebaiknya pakai DI seperti Koin, tapi ini untuk simpelnya)
+
     val sseClient = remember { SseClient() }
     val repo = remember { NotificationRepository(sseClient) }
-    val userId = "123" // Hardcoded untuk testing
+    val userId = "123"
 
-    // State untuk memantau status koneksi atau pesan terakhir di UI
     var lastMessage by remember { mutableStateOf("Menunggu notifikasi...") }
 
     LaunchedEffect(userId) {
@@ -32,7 +31,6 @@ fun App() {
             lastMessage = message
             println("Notifikasi Masuk: $message")
 
-            // Panggil fungsi native untuk show notification
             PlatformNotification.show(message)
         }
     }

@@ -24,19 +24,21 @@ class WakeFcmService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
-
-        println("Message received: $message")
+        println("FCM Received: ${message.data}")
 
         val type = message.data["type"] ?: return
-        if (type != "WAKE_SSE") return
-//        if (AppState.isForeground) return
+        if (type == "WAKE_SSE") {
+            if (AppState.isForeground) {
+                println("App is in foreground, skipping service start.")
+                return
+            }
 
-        val intent = Intent(this, SseForegroundService::class.java)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent)
-        } else {
-            startService(intent)
+            val intent = Intent(this, SseForegroundService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
         }
     }
 }

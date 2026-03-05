@@ -30,14 +30,12 @@ class SseClient(
                     if (line.startsWith("data:")) {
                         val data = line.substringAfter("data:").trim()
                         if (data.isNotBlank() && data != "ping") {
-                            // channelFlow menggunakan send(), ini Thread-Safe dan aman untuk context yang berbeda
                             send(data)
                         }
                     }
                 }
             }
         } catch (e: Exception) {
-            // Biarkan retryWhen yang menangani
             throw e
         }
     }
