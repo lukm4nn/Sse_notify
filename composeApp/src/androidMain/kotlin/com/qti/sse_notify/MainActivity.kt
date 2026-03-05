@@ -22,6 +22,7 @@ class MainActivity : ComponentActivity() {
             FirebaseMessaging.getInstance().token
                 .addOnSuccessListener { token ->
                     CoroutineScope(Dispatchers.IO).launch {
+                        Log.d("TokenFCM", token)
                         PushApi.sendFcmToken(token)
                     }
                 }

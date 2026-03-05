@@ -1,26 +1,17 @@
 package com.qti.sse_notify
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.request.headers
-import io.ktor.client.request.prepareGet
-import io.ktor.client.statement.bodyAsChannel
-import io.ktor.http.HttpHeaders
-import io.ktor.utils.io.readUTF8Line
+import io.ktor.client.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.utils.io.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.retryWhen
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 
 class SseClient(
-    val client: HttpClient = HttpClient(CIO) {
-
+    private val client: HttpClient = HttpClient(io.ktor.client.engine.cio.CIO) {
         install(HttpTimeout) {
             requestTimeoutMillis = Long.MAX_VALUE
             connectTimeoutMillis = 30_000
@@ -28,37 +19,32 @@ class SseClient(
         }
     }
 ) {
-    fun connect(url: String, userId: String): Flow<String> =
-        flow {
-            val response = client.get(url) {
+    fun connectStable(url: String, userId: String): Flow<String> = channelFlow {
+        try {
+            client.prepareGet(url) {
                 header("X-USER-ID", userId)
-            }
-
-            val channel = response.bodyAsChannel()
-            var eventBuffer = ""
-
-            while (!channel.isClosedForRead) {
-                val line = channel.readUTF8Line() ?: break
-
-                println("RAW LINE: $line")
-
-                if (line.isBlank()) {
-                    if (eventBuffer.isNotBlank()) {
-                        emit(eventBuffer.trim())
-                        eventBuffer = ""
+            }.execute { response ->
+                val channel = response.bodyAsChannel()
+                while (!channel.isClosedForRead) {
+                    val line = channel.readUTF8Line() ?: break
+                    if (line.startsWith("data:")) {
+                        val data = line.substringAfter("data:").trim()
+                        if (data.isNotBlank() && data != "ping") {
+                            // channelFlow menggunakan send(), ini Thread-Safe dan aman untuk context yang berbeda
+                            send(data)
+                        }
                     }
-                } else if (line.startsWith("data:")) {
-                    eventBuffer += line.removePrefix("data:").trim() + "\n"
                 }
             }
+        } catch (e: Exception) {
+            // Biarkan retryWhen yang menangani
+            throw e
         }
-            .flowOn(Dispatchers.IO)
-            .retryWhen { cause, _ ->
-                println("SSE retry: ${cause.message}")
-                kotlinx.coroutines.delay(3000)
-                true
-            }
-            .catch { e ->
-                println("SSE error handled: ${e.message}")
-            }
+    }
+        .retryWhen { cause, attempt ->
+            println("SSE Connection lost ($cause), retrying attempt: $attempt")
+            delay(3000)
+            true
+        }
+        .flowOn(Dispatchers.IO)
 }

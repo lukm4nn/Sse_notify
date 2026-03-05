@@ -7,7 +7,7 @@ class NotificationRepository(
 ) {
 
     fun listen(userId: String): Flow<String> =
-        sseClient.connect(
+        sseClient.connectStable(
             url = "http://10.0.2.2:8080/sse/notifications",
             userId = userId
         )
