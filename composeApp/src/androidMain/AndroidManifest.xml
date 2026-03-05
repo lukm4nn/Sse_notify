@@ -38,7 +38,7 @@
         </service>
 
         <service
-            android:name=".sse.SseForegroundService"
+            android:name=".SseForegroundService"
             android:foregroundServiceType="specialUse"
             android:exported="false" />
 

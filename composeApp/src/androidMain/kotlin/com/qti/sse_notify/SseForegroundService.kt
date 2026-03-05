@@ -1,14 +1,10 @@
-package com.qti.sse_notify.sse
+package com.qti.sse_notify
 
 import android.annotation.SuppressLint
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
-import com.qti.sse_notify.NotificationHelper
-import com.qti.sse_notify.NotificationRepository
-import com.qti.sse_notify.SseClient
 import kotlinx.coroutines.*
 
 class SseForegroundService : Service() {
@@ -19,7 +15,7 @@ class SseForegroundService : Service() {
     @SuppressLint("MissingPermission", "NewApi")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SseApp::WakelockTag")
         wakeLock?.acquire(15 * 60 * 1000L)
 
