@@ -4,6 +4,7 @@ package com.qti.sse_notify
 import android.content.Intent
 import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import kotlinx.coroutines.CoroutineScope
@@ -22,21 +23,25 @@ class WakeFcmService : FirebaseMessagingService() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onMessageReceived(message: RemoteMessage) {
-        println("FCM Received: ${message.data}")
+        val type = message.data["type"]
+        val title = message.data["title"] ?: "Notifikasi Baru"
+        val content = message.data["content"] ?: ""
 
-        val type = message.data["type"] ?: return
         if (type == "WAKE_SSE") {
-            if (AppState.isForeground) {
-                println("App is in foreground, skipping service start.")
-                return
+            // 1. Munculkan notifikasi tray secara manual agar user tahu ada info baru
+            NotificationHelper.show(applicationContext, content)
+
+            // 2. Jalankan Foreground Service untuk koneksi SSE
+            val intent = Intent(applicationContext, SseForegroundService::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
 
-            val intent = Intent(this, SseForegroundService::class.java)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent)
+                applicationContext.startForegroundService(intent)
             } else {
-                startService(intent)
+                applicationContext.startService(intent)
             }
         }
     }
